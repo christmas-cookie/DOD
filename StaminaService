@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.0 ] ===========
+========== [ v1.1 ] ===========
 ]]
 
 local Players = game:GetService("Players")
@@ -29,6 +29,7 @@ function StaminaService.SetMaxStamina(Value)
 	end
 end
 
+
 function StaminaService.AlwaysSetMaxStamina(Value)
 	Connections.AlwaysMax = true
 	Connections.MaxStamina = Value
@@ -48,11 +49,11 @@ function StaminaService.AlwaysSetMaxStamina(Value)
 
 		Connections.Attribute = Character:GetAttributeChangedSignal("MaxStamina"):Connect(function()
 			if not Connections.AlwaysMax then return end
+			local Current = Character:GetAttribute("MaxStamina")
 
-			local NewValue = Character:GetAttribute("MaxStamina")
-			Connections.OriginalMaxStamina = NewValue
-
-			Character:SetAttribute("MaxStamina", Value)
+			if Current ~= Value then
+				Character:SetAttribute("MaxStamina", Value)
+			end
 		end)
 	end
 
@@ -67,7 +68,7 @@ function StaminaService.AlwaysSetMaxStamina(Value)
 	Connections.CharacterAdded = Player.CharacterAdded:Connect(Apply)
 end
 
-function StaminaService.StopAlwaysMaxStamina()
+function StaminaService.StopAlwaysSetMaxStamina()
 	Connections.AlwaysMax = false
 
 	local Character = Player.Character
@@ -84,6 +85,8 @@ function StaminaService.StopAlwaysMaxStamina()
 		Connections.CharacterAdded:Disconnect()
 		Connections.CharacterAdded = nil
 	end
+
+	Connections.OriginalMaxStamina = nil
 end
 
 return StaminaService
