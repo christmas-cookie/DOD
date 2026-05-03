@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.0 ] ===========
+========== [ v1.1 ] ===========
 ]]
 
 local Players = game:GetService("Players")
@@ -123,7 +123,12 @@ local Abilities = {
 }
 
 function AbilityService.ReturnAbilities()
-	return Abilities
+	local List = {}
+
+	for Name, v in pairs(Abilities) do
+		table.insert(List, Name)
+	end
+	return List
 end
 
 function AbilityService.ReturnAbilityInfo(AbilityName)
