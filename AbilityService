@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.2 ] ===========
+========== [ v1.3 ] ===========
 ]]
 
 local Players = game:GetService("Players")
@@ -17,7 +17,7 @@ local Connections = {}
 local AbilityService = {}
 
 local Abilities = {
-	"Adrenaline" = {
+	["Adrenaline"] = {
 		["Name"] = "Adrenaline",
 		["Cooldown"] = 35,
 		["DisplayName"] = "Adrenaline",
@@ -26,7 +26,7 @@ local Abilities = {
 		["Tip"] = "Get a massive speed boost for 6 seconds, once the 6 seconds are over you will be given Exhaust and stunned briefly while also revealing your location to teammates for the duration.",
 		["Noise"] = "Causes 3 noise upon the first use, and 2 noise once the ability ends."
 	},
-	"Punch" = {
+	["Punch"] = {
 		["Name"] = "Punch",
 		["Cooldown"] = 40,
 		["DisplayName"] = "Punch",
@@ -35,7 +35,7 @@ local Abilities = {
 		["Tip"] = "Take a moment to swing forward and stun the killer for 3 seconds if landed, dealing 25 damage. Missing will result with heavy end-lag.",
 		["Noise"] = "Causes 2 noise upon use, and 3 noise if landed."
 	},
-	"Caretaker" = {
+	["Caretaker"] = {
 		["Name"] = "Caretaker",
 		["Cooldown"] = 30,
 		["DisplayName"] = "Caretaker",
@@ -46,7 +46,7 @@ local Abilities = {
 		["Noise"] = "Causes 1 noise upon use.",
 		["HealthModifier"] = -25
 	},
-	"Cloak" = {
+	["Cloak"] = {
 		["Name"] = "Cloak",
 		["Cooldown"] = 40,
 		["DisplayName"] = "Cloak",
@@ -55,7 +55,7 @@ local Abilities = {
 		["Tip"] = "Go invisible over the span of 1.5 seconds and stay invisible for 10 seconds, being given Exhaust for its duration. At the end of the invisibility, take another second to fully turn visible again. Being hit while invisible forces you to turn visible again.",
 		["Noise"] = "Causes no noise upon use."
 	},
-	"Block" = {
+	["Block"] = {
 		["Name"] = "Block",
 		["Cooldown"] = 40,
 		["DisplayName"] = "Block",
@@ -64,7 +64,7 @@ local Abilities = {
 		["Tip"] = "Raise your arm up and get in a blocking stance for 2 seconds, getting hit by (mostly) anything will grant a speed boost and regen 10 HP, also locking killer abilities for a second.",
 		["Noise"] = "Causes 1 noise upon use, and 5 noise if landed."
 	},
-	"Dash" = {
+	["Dash"] = {
 		["Name"] = "Dash",
 		["Cooldown"] = 20,
 		["DisplayName"] = "Dash",
@@ -73,7 +73,7 @@ local Abilities = {
 		["Tip"] = "Dash a great distance forward and drain 35 SP. Can be used even below 35 SP.",
 		["Noise"] = "Causes 1 noise upon use."
 	},
-	"BonusPad" = {
+	["BonusPad"] = {
 		["Name"] = "BonusPad",
 		["Cooldown"] = 60,
 		["DisplayName"] = "BonusPad",
@@ -83,7 +83,7 @@ local Abilities = {
 		["Noise"] = "Causes 6 noise upon use. Additionally causes 1 noise every time someone steps on a pad.",
 		["HealthModifier"] = -10
 	},
-	"Hotdog" = {
+	["Hotdog"] = {
 		["Name"] = "Hotdog",
 		["Cooldown"] = 25,
 		["DisplayName"] = "Hotdog",
@@ -92,7 +92,7 @@ local Abilities = {
 		["Tip"] = "Take out a delicious hotdog and eat it over the span of 3 seconds and be given an additional 5 max HP and 15 HP, at the cost of -5 SP. The max HP bonus caps at 125.",
 		["Noise"] = "Causes 5 noise upon use."
 	},
-	"Revolver" = {
+	["Revolver"] = {
 		["Name"] = "Revolver",
 		["Cooldown"] = 15,
 		["DisplayName"] = "Revolver",
@@ -102,7 +102,7 @@ local Abilities = {
 		["Noise"] = "Causes 4 noise upon use, 5 noise if landed. And 2 noise on reload.",
 		["StaminaModifier"] = -10
 	},
-	"Taunt" = {
+	["Taunt"] = {
 		["Name"] = "Taunt",
 		["Cooldown"] = 25,
 		["DisplayName"] = "Taunt",
@@ -111,7 +111,7 @@ local Abilities = {
 		["Tip"] = "Taunt the killer at close range with a hitbox that slowly gets larger. Successfully taunting the killer will highlight them to everyone and cover their screen, and also give you damage immunity for a bit. Missing embarrasses you to everyone.",
 		["Noise"] = "Causes 6 noise upon use, and 2 noise if landed. 2 noise is also done on miss."
 	},
-	"Banana" = {
+	["Banana"] = {
 		["Name"] = "Banana",
 		["Cooldown"] = 20,
 		["DisplayName"] = "Banana Peel",
