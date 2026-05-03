@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.3 ] ===========
+======= [ v1.3 patch ] ========
 ]]
 
 local Players = game:GetService("Players")
@@ -90,3 +90,5 @@ function StaminaService.StopAlwaysSetMaxStamina()
 	Connections.MaxStamina = nil
 	Connections.OriginalMaxStamina = nil
 end
+
+return StaminaService
