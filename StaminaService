@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.4 ] ===========
+========== [ v1.5 ] ===========
 ]]
 
 local Players = game:GetService("Players")
@@ -26,6 +26,13 @@ function StaminaService.SetMaxStamina(Value)
 	local Character = Player.Character
 	if Character then
 		Character:SetAttribute("MaxStamina", Value)
+	end
+end
+
+function StaminaService.GetMaxStamina()
+	local Character = Player.Character
+	if Character then
+		return Character:GetAttribute("MaxStamina")
 	end
 end
 
