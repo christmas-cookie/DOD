@@ -1,1 +1,89 @@
-print("test")
+--[[ 
+== This module was made for ==
+            HEXAGON
+========== [ v1.0 ] ===========
+]]
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local MovementModule = require(Player.PlayerGui.MainGui.Client.Modules.Movement)
+
+local StaminaService = {}
+local Connections = {}
+
+function StaminaService.SetStamina(Value)
+	MovementModule.Stamina = Value
+end
+
+function StaminaService.AddStamina(Value)
+	MovementModule.Stamina = MovementModule.Stamina + Value
+end
+
+function StaminaService.SetMaxStamina(Value)
+	Connections.MaxStamina = Value
+
+	local Character = Player.Character
+	if Character then
+		Character:SetAttribute("MaxStamina", Value)
+	end
+end
+
+function StaminaService.AlwaysSetMaxStamina(Value)
+	Connections.AlwaysMax = true
+	Connections.MaxStamina = Value
+
+	local function Apply(Character)
+		if not Character then return end
+
+		if not Connections.OriginalMaxStamina then
+			Connections.OriginalMaxStamina = Character:GetAttribute("MaxStamina")
+		end
+
+		Character:SetAttribute("MaxStamina", Value)
+
+		if Connections.Attribute then
+			Connections.Attribute:Disconnect()
+		end
+
+		Connections.Attribute = Character:GetAttributeChangedSignal("MaxStamina"):Connect(function()
+			if not Connections.AlwaysMax then return end
+
+			local NewValue = Character:GetAttribute("MaxStamina")
+			Connections.OriginalMaxStamina = NewValue
+
+			Character:SetAttribute("MaxStamina", Value)
+		end)
+	end
+
+	if Player.Character then
+		Apply(Player.Character)
+	end
+
+	if Connections.CharacterAdded then
+		Connections.CharacterAdded:Disconnect()
+	end
+
+	Connections.CharacterAdded = Player.CharacterAdded:Connect(Apply)
+end
+
+function StaminaService.StopAlwaysMaxStamina()
+	Connections.AlwaysMax = false
+
+	local Character = Player.Character
+	if Character and Connections.OriginalMaxStamina then
+		Character:SetAttribute("MaxStamina", Connections.OriginalMaxStamina)
+	end
+
+	if Connections.Attribute then
+		Connections.Attribute:Disconnect()
+		Connections.Attribute = nil
+	end
+
+	if Connections.CharacterAdded then
+		Connections.CharacterAdded:Disconnect()
+		Connections.CharacterAdded = nil
+	end
+end
+
+return StaminaService
