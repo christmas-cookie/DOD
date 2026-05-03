@@ -123,13 +123,12 @@ local Abilities = {
 }
 
 function AbilityService.ReturnAbilities()
-    local List = {}
+	local List = {}
 
-    for Name, _ in pairs(Abilities) do
-        table.insert(List, Name)
-    end
-
-    return List
+	for Name, v in pairs(Abilities) do
+		table.insert(List, Name)
+	end
+	return List
 end
 
 function AbilityService.ReturnAbilityInfo(AbilityName)
