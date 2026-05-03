@@ -1,0 +1,313 @@
+--[[ 
+== This module was made for ==
+            HEXAGON
+========== [ v1.0 ] ===========
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local CreateEvent = ReplicatedStorage.Events.RemoteEvents.CreateAbility
+local UseEvent = ReplicatedStorage.Events.RemoteFunctions.UseAbility
+
+local Connections = {}
+local AbilityService = {}
+
+local Abilities = {
+	["Adrenaline"] = {
+		["Name"] = "Adrenaline",
+		["Cooldown"] = 35,
+		["DisplayName"] = "Adrenaline",
+		["Icon"] = "rbxassetid://116399911657417",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Get a massive speed boost for 6 seconds, once the 6 seconds are over you will be given Exhaust and stunned briefly while also revealing your location to teammates for the duration.",
+		["Noise"] = "Causes 3 noise upon the first use, and 2 noise once the ability ends."
+	},
+	["Punch"] = {
+		["Name"] = "Punch",
+		["Cooldown"] = 40,
+		["DisplayName"] = "Punch",
+		["Icon"] = "rbxassetid://97428323453639",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Take a moment to swing forward and stun the killer for 3 seconds if landed, dealing 25 damage. Missing will result with heavy end-lag.",
+		["Noise"] = "Causes 2 noise upon use, and 3 noise if landed."
+	},
+	["Caretaker"] = {
+		["Name"] = "Caretaker",
+		["Cooldown"] = 30,
+		["DisplayName"] = "Caretaker",
+		["Icon"] = "rbxassetid://90712805517714",
+		["IsSurvivorAbility"] = true,
+		["OneBounceDisabled"] = true,
+		["Tip"] = "Splash a potion in front of you and heal anyone for 10 HP instantly, and another 10 overtime. This ability lowers Max HP by 25.",
+		["Noise"] = "Causes 1 noise upon use.",
+		["HealthModifier"] = -25
+	},
+	["Cloak"] = {
+		["Name"] = "Cloak",
+		["Cooldown"] = 40,
+		["DisplayName"] = "Cloak",
+		["Icon"] = "rbxassetid://90476367580326",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Go invisible over the span of 1.5 seconds and stay invisible for 10 seconds, being given Exhaust for its duration. At the end of the invisibility, take another second to fully turn visible again. Being hit while invisible forces you to turn visible again.",
+		["Noise"] = "Causes no noise upon use."
+	},
+	["Block"] = {
+		["Name"] = "Block",
+		["Cooldown"] = 40,
+		["DisplayName"] = "Block",
+		["Icon"] = "rbxassetid://120929805037270",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Raise your arm up and get in a blocking stance for 2 seconds, getting hit by (mostly) anything will grant a speed boost and regen 10 HP, also locking killer abilities for a second.",
+		["Noise"] = "Causes 1 noise upon use, and 5 noise if landed."
+	},
+	["Dash"] = {
+		["Name"] = "Dash",
+		["Cooldown"] = 20,
+		["DisplayName"] = "Dash",
+		["Icon"] = "rbxassetid://73777691791017",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Dash a great distance forward and drain 35 SP. Can be used even below 35 SP.",
+		["Noise"] = "Causes 1 noise upon use."
+	},
+	["BonusPad"] = {
+		["Name"] = "BonusPad",
+		["Cooldown"] = 60,
+		["DisplayName"] = "BonusPad",
+		["Icon"] = "rbxassetid://86775625332300",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Build a pad on the floor over the span of 5 seconds, stepping on the pad will grant a speed boost for 2 seconds. After 50 seconds, the pad will disappear. This ability lowers your Max HP by 10.",
+		["Noise"] = "Causes 6 noise upon use. Additionally causes 1 noise every time someone steps on a pad.",
+		["HealthModifier"] = -10
+	},
+	["Hotdog"] = {
+		["Name"] = "Hotdog",
+		["Cooldown"] = 25,
+		["DisplayName"] = "Hotdog",
+		["Icon"] = "rbxassetid://134322360499381",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Take out a delicious hotdog and eat it over the span of 3 seconds and be given an additional 5 max HP and 15 HP, at the cost of -5 SP. The max HP bonus caps at 125.",
+		["Noise"] = "Causes 5 noise upon use."
+	},
+	["Revolver"] = {
+		["Name"] = "Revolver",
+		["Cooldown"] = 15,
+		["DisplayName"] = "Revolver",
+		["Icon"] = "rbxassetid://107624957891469",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Stand still and fire your revolver forwards, shoot out a projectile with an explosive AOE, stunning for 2 seconds and dealing 50 damage. After firing you need to reload your revolver in order to shoot it again. This ability lowers SP by 10.",
+		["Noise"] = "Causes 4 noise upon use, 5 noise if landed. And 2 noise on reload.",
+		["StaminaModifier"] = -10
+	},
+	["Taunt"] = {
+		["Name"] = "Taunt",
+		["Cooldown"] = 25,
+		["DisplayName"] = "Taunt",
+		["Icon"] = "rbxassetid://85436299122876",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Taunt the killer at close range with a hitbox that slowly gets larger. Successfully taunting the killer will highlight them to everyone and cover their screen, and also give you damage immunity for a bit. Missing embarrasses you to everyone.",
+		["Noise"] = "Causes 6 noise upon use, and 2 noise if landed. 2 noise is also done on miss."
+	},
+	["Banana"] = {
+		["Name"] = "Banana",
+		["Cooldown"] = 20,
+		["DisplayName"] = "Banana Peel",
+		["Icon"] = "rbxassetid://96202444819611",
+		["IsSurvivorAbility"] = true,
+		["Tip"] = "Shoot a banana peel onto the floor, if the civilian who placed it or the killer steps on it, they'll be ragdolled for 2 seconds. The banana will decay over the span of 25 seconds.",
+		["Noise"] = "Causes 2 noise upon use, and 2 noise if someone slips on the banana peel."
+	}
+}
+
+function AbilityService.ReturnAbilities()
+	return Abilities
+end
+
+function AbilityService.ReturnAbilityInfo(AbilityName)
+	return Abilities[AbilityName]
+end
+
+function AbilityService.GetAbilitiesFolder()
+	local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
+	if not PlayerGui then return end
+
+	local MainGui = PlayerGui:FindFirstChild("MainGui")
+	if not MainGui then return end
+
+	local AbilitiesGui = MainGui:FindFirstChild("Abilities")
+	if not AbilitiesGui then return end
+		
+	return AbilitiesGui:FindFirstChild("Folder")
+end
+
+function AbilityService.GetAbilityButton(AbilityName)
+	local Folder = AbilityService.GetAbilitiesFolder()
+	if not Folder then
+		return
+	end
+	return Folder:FindFirstChild(AbilityName)
+end
+
+function AbilityService.IsAbilityOnCooldown(Button)
+	if not Button then
+		return true
+	end
+
+	local CooldownLabel = Button:FindFirstChild("CooldownLabel")
+	if not CooldownLabel then
+		return false
+	end
+
+	return CooldownLabel.Visible
+end
+
+function AbilityService.StartCooldown(Button, Duration)
+	if not Button or not Button.Parent then
+		return
+	end
+
+	local Cooldown = Button:FindFirstChild("Cooldown")
+	local CooldownLabel = Button:FindFirstChild("CooldownLabel")
+
+	if not Cooldown or not CooldownLabel then
+		return
+	end
+
+	Cooldown.Visible = true
+	Cooldown.Size = UDim2.new(1, 0, 1, 0)
+	CooldownLabel.Visible = true
+
+	local Tween = TweenService:Create(
+		Cooldown,
+		TweenInfo.new(Duration, Enum.EasingStyle.Linear),
+		{ Size = UDim2.new(1, 0, 0, 0) })
+	Tween:Play()
+
+	task.spawn(function()
+		for TimeLeft = Duration, 0, -1 do
+			if not Button or not Button.Parent then
+				break
+			end
+
+			if CooldownLabel then
+				CooldownLabel.Text = tostring(TimeLeft) .. "s"
+			end
+
+			task.wait(1)
+		end
+
+		if Button and Button.Parent and Cooldown and CooldownLabel then
+			Cooldown.Visible = false
+			Cooldown.Size = UDim2.new(1, 0, 1, 0)
+
+			CooldownLabel.Visible = false
+			CooldownLabel.Text = ""
+		end
+	end)
+end
+
+function AbilityService.UseAbility(AbilityName)
+	local Button = AbilityService.GetAbilityButton(AbilityName)
+	if not Button then
+		return false
+	end
+
+	local Locked = Button:FindFirstChild("Locked")
+	if Locked and Locked.Visible then
+		return false
+	end
+
+	if AbilityService.IsAbilityOnCooldown(Button) then
+		return false
+	end
+
+	local Success, Result, Cooldown = pcall(function()
+		return UseEvent:InvokeServer(AbilityName)
+	end)
+
+	if not Success or not Result then
+		return false
+	end
+
+	if Cooldown and tonumber(Cooldown) then
+		AbilityService.StartCooldown(Button, tonumber(Cooldown))
+	end
+	return true
+end
+
+function AbilityService.BindAbility(AbilityName)
+	local Button = AbilityService.GetAbilityButton(AbilityName)
+	if not Button then
+		return false
+	end
+
+	if Connections[AbilityName] then
+		for i, Connection in pairs(Connections[AbilityName]) do
+			if Connection then
+				Connection:Disconnect()
+			end
+		end
+	end
+
+	Connections[AbilityName] = {}
+
+	table.insert(
+		Connections[AbilityName],
+		Button.MouseButton1Click:Connect(function()
+			AbilityService.UseAbility(AbilityName)
+		end))
+
+	local Keybind = Button:FindFirstChild("Keybind")
+	if Keybind then
+		table.insert(
+			Connections[AbilityName],
+			game:GetService("UserInputService").InputBegan:Connect(function(Input, GameProcessed)
+				if GameProcessed then
+					return
+				end
+
+				if Input.UserInputType ~= Enum.UserInputType.Keyboard then
+					return
+				end
+				
+				if Input.KeyCode.Name == Keybind.Text then
+					AbilityService.UseAbility(AbilityName)
+				end
+			end))
+	end
+	return true
+end
+
+function AbilityService.CreateAbility(AbilityName)
+	if Connections[AbilityName] then
+		return false
+	end
+
+	local Ability = AbilityService.ReturnAbilityInfo(AbilityName)
+	if not Ability then
+		return false
+	end
+
+	firesignal(CreateEvent.OnClientEvent, Ability, true)
+
+	task.spawn(function()
+		local Button
+		for i = 1, 50 do
+			Button = AbilityService.GetAbilityButton(AbilityName)
+			if Button then
+				break
+			end
+			task.wait(0.1)
+		end
+
+		if Button then
+			AbilityService.BindAbility(AbilityName)
+		end
+	end)
+	return true
+end
+
+return AbilityService
