@@ -265,7 +265,7 @@ function AbilityService.BindAbility(AbilityName)
 			AbilityService.UseAbility(AbilityName)
 		end))
 
-	local Keybind = Button:FindFirstChild("Keybind")
+	local Keybind = Button:FindFirstChild("Input")
 	if Keybind then
 		table.insert(
 			Connections[AbilityName],
