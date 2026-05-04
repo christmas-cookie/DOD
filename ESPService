@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.0 ] ===========
+========== [ v1.1 ] ===========
 ]]
 
 local Workspace = game:GetService("Workspace")
@@ -16,14 +16,26 @@ local Settings = {
     Enabled = false,
     ShowHighlight = true,
     ShowNames = true,
+    ShowAbilities = true,
+    ShowNameRoles = true,
 
-    FillTransparency = 0.75,
-    OutlineTransparency = 1,
-    TextSize = 14,
+    FillTransparency = 0.65,
+    OutlineTransparency = 0.8,
+    TextSize = 10,
 
     Values = {},
     Active = {}
 }
+
+function ESPService:GetSetting(Key)
+    return Settings[Key]
+end
+
+function ESPService:SetSetting(Key, Value)
+    if Settings[Key] == nil then return end
+    Settings[Key] = Value
+    self:RefreshESP()
+end
 
 local function Disconnect(Key)
     local Connection = Connections[Key]
@@ -66,75 +78,39 @@ function ESPService:GetNameInfo(Ins)
         return "Unknown"
     end
 
-    local Name = Ins.Name
+    local Tags = {}
+    table.insert(Tags, Ins.Name)
 
     if Ins.Name == "BoostPad" then
         local Beam = Ins:FindFirstChild("Beam", true)
-
         if Beam and Beam:IsA("BasePart") and Beam.Color == Color3.fromRGB(0, 255, 127) then
             return "CarePad"
         end
     end
 
-    if Ins.Parent and Ins.Parent.Name == "Killers" then
-        Name = Name .. " | Killer"
+    if Ins.Name == "BananaPeelAbility" then
+        return "Banana"
     end
 
-    return Name
-end
+    if Settings.ShowNameRoles then
+        if Ins.Parent and Ins.Parent.Name == "Killer" then
+            table.insert(Tags, "Killer")
+        end
 
-function ESPService:IsEnabled()
-    return Settings.Enabled
-end
+        if Ins.Parent and Ins.Parent.Name == "Survivor" then
+            table.insert(Tags, "Survivor")
+        end
+    end
 
-function ESPService:IsHighlightEnabled()
-    return Settings.ShowHighlight
-end
+    if Settings.ShowAbilities then
+        local Ability1 = Ins:GetAttribute("Ability1")
+        if Ability1 then table.insert(Tags, Ability1) end
 
-function ESPService:IsNamesEnabled()
-    return Settings.ShowNames
-end
+        local Ability2 = Ins:GetAttribute("Ability2")
+        if Ability2 then table.insert(Tags, Ability2) end
+    end
 
-function ESPService:GetFillTransparency()
-    return Settings.FillTransparency
-end
-
-function ESPService:GetOutlineTransparency()
-    return Settings.OutlineTransparency
-end
-
-function ESPService:GetTextSize()
-    return Settings.TextSize
-end
-
-function ESPService:SetEnabled(State)
-    Settings.Enabled = State
-    self:RefreshESP()
-end
-
-function ESPService:SetHighlightEnabled(State)
-    Settings.ShowHighlight = State
-    self:RefreshESP()
-end
-
-function ESPService:SetNamesEnabled(State)
-    Settings.ShowNames = State
-    self:RefreshESP()
-end
-
-function ESPService:SetFillTransparency(Value)
-    Settings.FillTransparency = Value
-    self:RefreshESP()
-end
-
-function ESPService:SetOutlineTransparency(Value)
-    Settings.OutlineTransparency = Value
-    self:RefreshESP()
-end
-
-function ESPService:SetTextSize(Value)
-    Settings.TextSize = Value
-    self:RefreshESP()
+    return table.concat(Tags, " | ")
 end
 
 function ESPService:CreateESP(Object, Flag, Color)
@@ -161,7 +137,7 @@ function ESPService:CreateESP(Object, Flag, Color)
     Highlight.OutlineColor = Color
     Highlight.FillTransparency = Settings.FillTransparency
     Highlight.OutlineTransparency = Settings.OutlineTransparency
-    Highlight.Enabled = self:IsHighlightEnabled()
+    Highlight.Enabled = Settings.ShowHighlight
     Highlight.Parent = Object
 
     Settings.Active[Object].Highlight = Highlight
@@ -172,7 +148,7 @@ function ESPService:CreateESP(Object, Flag, Color)
     Billboard.Size = UDim2.new(0, 200, 0, 50)
     Billboard.StudsOffset = Vector3.new(0, 2.5, 0)
     Billboard.AlwaysOnTop = true
-    Billboard.Enabled = self:IsNamesEnabled()
+    Billboard.Enabled = Settings.ShowNames
     Billboard.Parent = Object
 
     local Label = Instance.new("TextLabel")
@@ -188,7 +164,7 @@ function ESPService:CreateESP(Object, Flag, Color)
     Settings.Active[Object].Billboard = Billboard
     Settings.Active[Object].Label = Label
 
-    Connections["ESPDestroy" .. tostring(Object)] = Object.AncestryChanged:Connect(function(i, Parent)
+    Connections["ESPDestroy" .. tostring(Object)] = Object.AncestryChanged:Connect(function(_, Parent)
         if not Parent then
             self:RemoveESP(Object)
         end
@@ -203,7 +179,6 @@ function ESPService:RemoveESP(Object)
     if Active.Billboard then Active.Billboard:Destroy() end
 
     Disconnect("ESPDestroy" .. tostring(Object))
-
     Settings.Active[Object] = nil
 end
 
@@ -214,11 +189,11 @@ function ESPService:RefreshESP()
             continue
         end
 
-        local Allowed = self:IsEnabled() and (self:IsHighlightEnabled() or self:IsNamesEnabled())
+        local Allowed = Settings.Enabled and (Settings.ShowHighlight or Settings.ShowNames)
         local Color = Active.Color
 
         if Active.Highlight then
-            Active.Highlight.Enabled = Allowed and self:IsHighlightEnabled()
+            Active.Highlight.Enabled = Allowed and Settings.ShowHighlight
             Active.Highlight.FillColor = Color
             Active.Highlight.OutlineColor = Color
             Active.Highlight.FillTransparency = Settings.FillTransparency
@@ -226,7 +201,7 @@ function ESPService:RefreshESP()
         end
 
         if Active.Billboard then
-            Active.Billboard.Enabled = Allowed and self:IsNamesEnabled()
+            Active.Billboard.Enabled = Allowed and Settings.ShowNames
 
             local Head = GetHead(Object)
             if Head then
@@ -260,9 +235,7 @@ function ESPService:BindESP(Object, Flag, Mode, Color, ChildrenName)
         if not Target or Settings.Active[Target] then return end
 
         if Mode == "Children" and ChildrenName then
-            if Target.Name ~= ChildrenName then
-                return
-            end
+            if Target.Name ~= ChildrenName then return end
         end
 
         self:CreateESP(Target, Flag, Color)
@@ -279,12 +252,8 @@ function ESPService:BindESP(Object, Flag, Mode, Color, ChildrenName)
         end
 
         Connections["ESPChildAdded" .. Flag] = Object.ChildAdded:Connect(function(Child)
-            if not self:IsEnabled() then return end
-
-            if ChildrenName and Child.Name ~= ChildrenName then
-                return
-            end
-
+            if not Settings.Enabled then return end
+            if ChildrenName and Child.Name ~= ChildrenName then return end
             TryBind(Child)
         end)
 
@@ -302,7 +271,7 @@ function ESPService:BindESP(Object, Flag, Mode, Color, ChildrenName)
         end
 
         Connections["ESPDescendantAdded" .. Flag] = Workspace.DescendantAdded:Connect(function(Descendant)
-            if Descendant.Name == SearchName and self:IsEnabled() then
+            if Descendant.Name == SearchName and Settings.Enabled then
                 TryBind(Descendant)
             end
         end)
