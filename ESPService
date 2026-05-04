@@ -179,7 +179,7 @@ function ESPService:CreateESP(Object, Flag, Color)
     Label.Size = UDim2.fromScale(1, 1)
     Label.BackgroundTransparency = 1
     Label.TextSize = Settings.TextSize
-    Label.Font = Enum.Font.Arial
+    Label.Font = Enum.Font.ArialBold
     Label.TextColor3 = Color
     Label.TextStrokeTransparency = 0
     Label.Text = self:GetNameInfo(Object)
