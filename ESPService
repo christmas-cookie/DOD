@@ -1,0 +1,349 @@
+--[[ 
+== This module was made for ==
+            HEXAGON
+========== [ v1.0 ] ===========
+]]
+
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local Connections = {}
+
+local Settings = {
+    Enabled = false,
+    ShowHighlight = true,
+    ShowNames = true,
+
+    FillTransparency = 0.75,
+    OutlineTransparency = 1,
+    TextSize = 14,
+
+    Values = {},
+    Active = {}
+}
+
+local function Disconnect(Key)
+    local Connection = Connections[Key]
+    if Connection then
+        Connection:Disconnect()
+        Connections[Key] = nil
+    end
+end
+
+local function DisconnectFlag(Prefix)
+    for Key, Connection in pairs(Connections) do
+        if string.find(Key, Prefix, 1, true) then
+            Connection:Disconnect()
+            Connections[Key] = nil
+        end
+    end
+end
+
+local function GetHead(Object)
+    if not Object then return nil end
+
+    if Object:IsA("Model") then
+        return Object:FindFirstChild("Head")
+            or Object:FindFirstChild("HumanoidRootPart")
+            or Object.PrimaryPart
+            or Object:FindFirstChildWhichIsA("BasePart", true)
+    end
+
+    if Object:IsA("BasePart") then
+        return Object
+    end
+
+    return Object:FindFirstChildWhichIsA("BasePart", true)
+end
+
+local ESPService = {}
+
+function ESPService:GetNameInfo(Ins)
+    if not Ins then
+        return "Unknown"
+    end
+
+    local Name = Ins.Name
+
+    if Ins.Name == "BoostPad" then
+        local Beam = Ins:FindFirstChild("Beam", true)
+
+        if Beam and Beam:IsA("BasePart") and Beam.Color == Color3.fromRGB(0, 255, 127) then
+            return "CarePad"
+        end
+    end
+
+    if Ins.Parent and Ins.Parent.Name == "Killers" then
+        Name = Name .. " | Killer"
+    end
+
+    return Name
+end
+
+function ESPService:IsEnabled()
+    return Settings.Enabled
+end
+
+function ESPService:IsHighlightEnabled()
+    return Settings.ShowHighlight
+end
+
+function ESPService:IsNamesEnabled()
+    return Settings.ShowNames
+end
+
+function ESPService:GetFillTransparency()
+    return Settings.FillTransparency
+end
+
+function ESPService:GetOutlineTransparency()
+    return Settings.OutlineTransparency
+end
+
+function ESPService:GetTextSize()
+    return Settings.TextSize
+end
+
+function ESPService:SetEnabled(State)
+    Settings.Enabled = State
+    self:RefreshESP()
+end
+
+function ESPService:SetHighlightEnabled(State)
+    Settings.ShowHighlight = State
+    self:RefreshESP()
+end
+
+function ESPService:SetNamesEnabled(State)
+    Settings.ShowNames = State
+    self:RefreshESP()
+end
+
+function ESPService:SetFillTransparency(Value)
+    Settings.FillTransparency = Value
+    self:RefreshESP()
+end
+
+function ESPService:SetOutlineTransparency(Value)
+    Settings.OutlineTransparency = Value
+    self:RefreshESP()
+end
+
+function ESPService:SetTextSize(Value)
+    Settings.TextSize = Value
+    self:RefreshESP()
+end
+
+function ESPService:CreateESP(Object, Flag, Color)
+    if not Object or Settings.Active[Object] then return end
+
+    local Head = GetHead(Object)
+    if not Head then return end
+
+    Color = Color or Color3.fromRGB(255, 80, 80)
+
+    Settings.Active[Object] = {
+        Highlight = nil,
+        Billboard = nil,
+        Label = nil,
+        Flag = Flag,
+        Color = Color
+    }
+
+    local Highlight = Instance.new("Highlight")
+    Highlight.Name = "[HEXAGON] Highlight"
+    Highlight.Adornee = Object
+    Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    Highlight.FillColor = Color
+    Highlight.OutlineColor = Color
+    Highlight.FillTransparency = Settings.FillTransparency
+    Highlight.OutlineTransparency = Settings.OutlineTransparency
+    Highlight.Enabled = self:IsHighlightEnabled()
+    Highlight.Parent = Object
+
+    Settings.Active[Object].Highlight = Highlight
+
+    local Billboard = Instance.new("BillboardGui")
+    Billboard.Name = "[HEXAGON] Billboard"
+    Billboard.Adornee = Head
+    Billboard.Size = UDim2.new(0, 200, 0, 50)
+    Billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+    Billboard.AlwaysOnTop = true
+    Billboard.Enabled = self:IsNamesEnabled()
+    Billboard.Parent = Object
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.fromScale(1, 1)
+    Label.BackgroundTransparency = 1
+    Label.TextSize = Settings.TextSize
+    Label.Font = Enum.Font.Arial
+    Label.TextColor3 = Color
+    Label.TextStrokeTransparency = 0
+    Label.Text = self:GetNameInfo(Object)
+    Label.Parent = Billboard
+
+    Settings.Active[Object].Billboard = Billboard
+    Settings.Active[Object].Label = Label
+
+    Connections["ESPDestroy" .. tostring(Object)] = Object.AncestryChanged:Connect(function(i, Parent)
+        if not Parent then
+            self:RemoveESP(Object)
+        end
+    end)
+end
+
+function ESPService:RemoveESP(Object)
+    local Active = Settings.Active[Object]
+    if not Active then return end
+
+    if Active.Highlight then Active.Highlight:Destroy() end
+    if Active.Billboard then Active.Billboard:Destroy() end
+
+    Disconnect("ESPDestroy" .. tostring(Object))
+
+    Settings.Active[Object] = nil
+end
+
+function ESPService:RefreshESP()
+    for Object, Active in pairs(Settings.Active) do
+        if not Object or not Object.Parent then
+            self:RemoveESP(Object)
+            continue
+        end
+
+        local Allowed = self:IsEnabled() and (self:IsHighlightEnabled() or self:IsNamesEnabled())
+        local Color = Active.Color
+
+        if Active.Highlight then
+            Active.Highlight.Enabled = Allowed and self:IsHighlightEnabled()
+            Active.Highlight.FillColor = Color
+            Active.Highlight.OutlineColor = Color
+            Active.Highlight.FillTransparency = Settings.FillTransparency
+            Active.Highlight.OutlineTransparency = Settings.OutlineTransparency
+        end
+
+        if Active.Billboard then
+            Active.Billboard.Enabled = Allowed and self:IsNamesEnabled()
+
+            local Head = GetHead(Object)
+            if Head then
+                Active.Billboard.Adornee = Head
+            end
+        end
+
+        if Active.Label then
+            Active.Label.Text = self:GetNameInfo(Object)
+            Active.Label.TextSize = Settings.TextSize
+            Active.Label.TextColor3 = Color
+        end
+    end
+end
+
+function ESPService:BindESP(Object, Flag, Mode, Color, ChildrenName)
+    if not Object or not Flag then return end
+
+    Mode = Mode or "Normal"
+
+    self:UnbindESP(Flag)
+
+    Settings.Values[Flag] = {
+        Object = Object,
+        Mode = Mode,
+        Color = Color,
+        ChildrenName = ChildrenName
+    }
+
+    local function TryBind(Target)
+        if not Target or Settings.Active[Target] then return end
+
+        if Mode == "Children" and ChildrenName then
+            if Target.Name ~= ChildrenName then
+                return
+            end
+        end
+
+        self:CreateESP(Target, Flag, Color)
+    end
+
+    if Mode == "Normal" then
+        TryBind(Object)
+
+    elseif Mode == "Children" then
+        for i, Child in pairs(Object:GetChildren()) do
+            if not ChildrenName or Child.Name == ChildrenName then
+                TryBind(Child)
+            end
+        end
+
+        Connections["ESPChildAdded" .. Flag] = Object.ChildAdded:Connect(function(Child)
+            if not self:IsEnabled() then return end
+
+            if ChildrenName and Child.Name ~= ChildrenName then
+                return
+            end
+
+            TryBind(Child)
+        end)
+
+        Connections["ESPChildRemoved" .. Flag] = Object.ChildRemoved:Connect(function(Child)
+            self:RemoveESP(Child)
+        end)
+
+    elseif Mode == "Descendants" then
+        local SearchName = typeof(Object) == "string" and Object or Object.Name
+
+        for i, Descendant in pairs(Workspace:GetDescendants()) do
+            if Descendant.Name == SearchName then
+                TryBind(Descendant)
+            end
+        end
+
+        Connections["ESPDescendantAdded" .. Flag] = Workspace.DescendantAdded:Connect(function(Descendant)
+            if Descendant.Name == SearchName and self:IsEnabled() then
+                TryBind(Descendant)
+            end
+        end)
+
+        Connections["ESPDescendantRemoved" .. Flag] = Workspace.DescendantRemoving:Connect(function(Descendant)
+            if Descendant.Name == SearchName then
+                self:RemoveESP(Descendant)
+            end
+        end)
+    end
+
+    self:RefreshESP()
+end
+
+function ESPService:UnbindESP(Flag)
+    if not Settings.Values[Flag] then return end
+
+    for Object, Active in pairs(Settings.Active) do
+        if Active.Flag == Flag then
+            self:RemoveESP(Object)
+        end
+    end
+
+    DisconnectFlag(Flag)
+    Settings.Values[Flag] = nil
+end
+
+function ESPService:ClearAll()
+    for Flag in pairs(Settings.Values) do
+        self:UnbindESP(Flag)
+    end
+end
+
+Connections["ESPHeartbeat"] = RunService.Heartbeat:Connect(function()
+    if not Settings.Enabled then return end
+
+    for Object, Active in pairs(Settings.Active) do
+        if Active.Label and Object and Object.Parent then
+            Active.Label.Text = ESPService:GetNameInfo(Object)
+        end
+    end
+end)
+
+return ESPService
