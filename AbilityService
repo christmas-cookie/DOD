@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.3 ] ===========
+========== [ v1.4 ] ===========
 ]]
 
 local Players = game:GetService("Players")
@@ -312,6 +312,20 @@ function AbilityService.CreateAbility(AbilityName)
 			AbilityService.BindAbility(AbilityName)
 		end
 	end)
+	return true
+end
+
+function AbilityService.CreateDeck(...)
+	local Decks = { ... }
+
+	for i, Deck in ipairs(Decks) do
+		if typeof(Deck) ~= "table" then
+			return false
+		end
+	end
+
+	firesignal(DeckEvent.OnClientEvent, table.unpack(Decks))
+
 	return true
 end
 
