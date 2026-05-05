@@ -82,8 +82,8 @@ function ESPService:GetNameInfo(Ins)
     table.insert(Tags, Ins.Name)
 
     if Ins.Name == "BonusPad" then
-        local Beam = Ins:FindFirstChild("Model"):FindFirstChild("Beam")
-        if Beam and Beam.Color == Color3.fromRGB(0, 255, 127) then
+        local Pad = Ins:FindFirstChild("Pad")
+        if Pad and Pad.Color == Color3.fromRGB(100, 255, 57) then
             return "CarePad"
         end
     end
