@@ -10,6 +10,7 @@ local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 
+local ESPService = {}
 local Connections = {}
 
 local Settings = {
@@ -70,8 +71,6 @@ local function GetHead(Object)
 
     return Object:FindFirstChildWhichIsA("BasePart", true)
 end
-
-local ESPService = {}
 
 function ESPService:GetNameInfo(Ins)
     if not Ins then
