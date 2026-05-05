@@ -12,6 +12,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local CreateEvent = ReplicatedStorage.Events.RemoteEvents.CreateAbility
 local UseEvent = ReplicatedStorage.Events.RemoteFunctions.UseAbility
+local DeckEvent = ReplicatedStorage.Events.RemoteEvents.AbilitySelection
 
 local Connections = {}
 local AbilityService = {}
