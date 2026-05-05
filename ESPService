@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.1 ] ===========
+========== [ v1.2 ] ===========
 ]]
 
 local Workspace = game:GetService("Workspace")
@@ -19,6 +19,7 @@ local Settings = {
     ShowNames = true,
     ShowAbilities = true,
     ShowNameRoles = true,
+    ShowHealth = true,
 
     FillTransparency = 0.65,
     OutlineTransparency = 0.8,
@@ -81,8 +82,8 @@ function ESPService:GetNameInfo(Ins)
     table.insert(Tags, Ins.Name)
 
     if Ins.Name == "BoostPad" then
-        local Beam = Ins:FindFirstChild("Beam", true)
-        if Beam and Beam:IsA("BasePart") and Beam.Color == Color3.fromRGB(0, 255, 127) then
+        local Beam = Ins:FindFirstChild("Model"):FindFirstChild("Beam")
+        if Beam and Beam.Color == Color3.fromRGB(0, 255, 127) then
             return "CarePad"
         end
     end
@@ -90,6 +91,8 @@ function ESPService:GetNameInfo(Ins)
     if Ins.Name == "BananaPeelAbility" then
         return "Banana"
     end
+    
+    
 
     if Settings.ShowNameRoles then
         if Ins.Parent and Ins.Parent.Name == "Killer" then
@@ -107,6 +110,11 @@ function ESPService:GetNameInfo(Ins)
 
         local Ability2 = Ins:GetAttribute("Ability2")
         if Ability2 then table.insert(Tags, Ability2) end
+    end
+    
+    if Settings.ShowHealth then
+        local Hum = Ins:FindFirstChild("Humanoid")
+        if Hum then table.insert(Tags, tostring(Hum.Health) .. "HP") end
     end
 
     return table.concat(Tags, " | ")
@@ -154,7 +162,7 @@ function ESPService:CreateESP(Object, Flag, Color)
     Label.Size = UDim2.fromScale(1, 1)
     Label.BackgroundTransparency = 1
     Label.TextSize = Settings.TextSize
-    Label.Font = Enum.Font.ArialBold
+    Label.Font = Enum.Font.Arial
     Label.TextColor3 = Color
     Label.TextStrokeTransparency = 0
     Label.Text = self:GetNameInfo(Object)
@@ -189,6 +197,7 @@ function ESPService:RefreshESP()
         end
 
         local Allowed = Settings.Enabled and (Settings.ShowHighlight or Settings.ShowNames)
+
         local Color = Active.Color
 
         if Active.Highlight then
