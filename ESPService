@@ -22,7 +22,7 @@ local Settings = {
     ShowHealth = true,
 
     FillTransparency = 0.65,
-    OutlineTransparency = 0.8,
+    OutlineTransparency = 0.7,
     TextSize = 10,
 
     Values = {},
@@ -81,7 +81,7 @@ function ESPService:GetNameInfo(Ins)
     local Tags = {}
     table.insert(Tags, Ins.Name)
 
-    if Ins.Name == "BoostPad" then
+    if Ins.Name == "BonusPad" then
         local Beam = Ins:FindFirstChild("Model"):FindFirstChild("Beam")
         if Beam and Beam.Color == Color3.fromRGB(0, 255, 127) then
             return "CarePad"
