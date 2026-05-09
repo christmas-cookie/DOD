@@ -60,10 +60,7 @@ local function GetHead(Object)
     if not Object then return nil end
 
     if Object:IsA("Model") then
-        return Object:FindFirstChild("Head")
-            or Object:FindFirstChild("HumanoidRootPart")
-            or Object.PrimaryPart
-            or Object:FindFirstChildWhichIsA("BasePart", true)
+        return Object:FindFirstChild("Head") or Object:FindFirstChild("HumanoidRootPart") or Object.PrimaryPart or Object:FindFirstChildWhichIsA("BasePart", true)
     end
 
     if Object:IsA("BasePart") then
@@ -92,7 +89,9 @@ function ESPService:GetNameInfo(Ins)
         return "Banana"
     end
     
-    
+    if Ins.Name == "MusicBox" then
+        return "Music Box"
+    end
 
     if Settings.ShowNameRoles then
         if Ins.Parent and Ins.Parent.Name == "Killer" then
@@ -162,7 +161,7 @@ function ESPService:CreateESP(Object, Flag, Color)
     Label.Size = UDim2.fromScale(1, 1)
     Label.BackgroundTransparency = 1
     Label.TextSize = Settings.TextSize
-    Label.Font = Enum.Font.ArialBold
+    Label.Font = Enum.Font.Roboto
     Label.TextColor3 = Color
     Label.TextStrokeTransparency = 0
     Label.Text = self:GetNameInfo(Object)
