@@ -15,7 +15,7 @@ local GameAssets = Workspace:WaitForChild("GameAssets")
 local Teams = GameAssets:WaitForChild("Teams")
 
 local Killers = Teams:WaitForChild("Killer")
-local Survivors = Teams:WaitForChild("Survivors")
+local Survivors = Teams:WaitForChild("Survivor")
 local Ghosts = Teams:FindFirstChild("Ghost")
 
 local function GetCharacter(Input)
