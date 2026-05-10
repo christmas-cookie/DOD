@@ -1,7 +1,7 @@
 --[[ 
 == This module was made for ==
             HEXAGON
-========== [ v1.2 ] ===========
+========== [ v1.3 ] ===========
 ]]
 
 local Workspace = game:GetService("Workspace")
@@ -70,28 +70,39 @@ local function GetHead(Object)
     return Object:FindFirstChildWhichIsA("BasePart", true)
 end
 
+local function GetHumanoid(Object)
+    if not Object then return nil end    
+    if Object:IsA("Humanoid") then return Object end
+    if Object:IsA("Model") then return Object:FindFirstChildWhichIsA("Humanoid", true) end
+    return Object:FindFirstChildWhichIsA("Humanoid", true)
+end
+
 function ESPService:GetNameInfo(Ins)
     if not Ins then
         return "Unknown"
     end
 
+    local DisplayName = Ins.Name
     local Tags = {}
-    table.insert(Tags, Ins.Name)
 
     if Ins.Name == "BonusPad" then
         local Pad = Ins:FindFirstChild("Pad")
         if Pad and Pad.Color == Color3.fromRGB(100, 255, 57) then
-            return "CarePad"
+            DisplayName = "CarePad"
         end
-    end
-
-    if Ins.Name == "BananaPeelAbility" then
-        return "Banana"
+        
+    elseif Ins.Name == "BananaPeelAbility" then
+        DisplayName = "Banana"
+        
+    elseif Ins.Name == "MusicBox" then
+        DisplayName = "Music Box"
     end
     
-    if Ins.Name == "MusicBox" then
-        return "Music Box"
+    elseif Ins.Name == "EvilScary" then
+        DisplayName = "Evil Scary"
     end
+
+    table.insert(Tags, DisplayName)
 
     if Settings.ShowNameRoles then
         if Ins.Parent and Ins.Parent.Name == "Killer" then
@@ -105,15 +116,21 @@ function ESPService:GetNameInfo(Ins)
 
     if Settings.ShowAbilities then
         local Ability1 = Ins:GetAttribute("Ability1")
-        if Ability1 then table.insert(Tags, Ability1) end
+        if Ability1 then
+            table.insert(Tags, Ability1)
+        end
 
         local Ability2 = Ins:GetAttribute("Ability2")
-        if Ability2 then table.insert(Tags, Ability2) end
+        if Ability2 then
+            table.insert(Tags, Ability2)
+        end
     end
-    
+
     if Settings.ShowHealth then
-        local Hum = Ins:FindFirstChild("Humanoid")
-        if Hum then table.insert(Tags, tostring(Hum.Health) .. "hp") end
+        local Humanoid = GetHumanoid(Ins)
+        if Humanoid then
+            table.insert(Tags, tostring(math.floor(Humanoid.Health)) .. "hp")
+        end
     end
 
     return table.concat(Tags, " | ")
