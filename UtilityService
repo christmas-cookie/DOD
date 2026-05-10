@@ -1,0 +1,181 @@
+--[[ 
+== This module was made for ==
+            HEXAGON
+========== [ v1.0 ] ===========
+]]
+
+local UtilityService = {}
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+
+local GameAssets = Workspace:WaitForChild("GameAssets")
+local Teams = GameAssets:WaitForChild("Teams")
+
+local Killers = Teams:WaitForChild("Killer")
+local Survivors = Teams:WaitForChild("Survivors")
+local Ghosts = Teams:FindFirstChild("Ghost")
+
+local function GetCharacter(Input)
+	if not Input then return nil end
+
+	if Input:IsA("Player") then
+		return Input.Character
+	end
+
+	if Input:IsA("Model") then
+		return Input
+	end
+
+	return nil
+end
+
+local function GetRootPos()
+	local Character = LocalPlayer.Character
+	if not Character then return nil end
+
+	local Root = Character:FindFirstChild("HumanoidRootPart")
+	if not Root then return nil end
+
+	return Root.Position
+end
+
+local function GetDistance(Pos)
+	local RootPos = GetRootPos()
+	if not RootPos or not Pos then return math.huge end
+	return (RootPos - Pos).Magnitude
+end
+
+function UtilityService.GetKillers()
+	return Killers:GetChildren()
+end
+
+function UtilityService.GetSurvivors()
+	return Survivors:GetChildren()
+end
+
+function UtilityService.GetNearestKiller()
+	local Closest = nil
+	local Shortest = math.huge
+	local RootPos = GetRootPos()
+
+	if not RootPos then return nil end
+
+	for i, v in ipairs(Killers:GetChildren()) do
+		local Primary = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
+		if Primary then
+			local Pos = Primary.Position
+			local Distance = (RootPos - Pos).Magnitude
+			if Distance < Shortest then
+				Shortest = Distance
+				Closest = v
+			end
+		end
+	end
+
+	return Closest
+end
+
+function UtilityService.GetNearestSurvivor()
+	local Closest = nil
+	local Shortest = math.huge
+	local RootPos = GetRootPos()
+
+	if not RootPos then return nil end
+
+	for i, v in ipairs(Survivors:GetChildren()) do
+		local Primary = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
+		if Primary then
+			local Pos = Primary.Position
+			local Distance = (RootPos - Pos).Magnitude
+			if Distance < Shortest then
+				Shortest = Distance
+				Closest = v
+			end
+		end
+	end
+
+	return Closest
+end
+
+function UtilityService.GetEvilestPlayer()
+	local Evilest = nil
+	local Highest = -math.huge
+
+	for i, Player in ipairs(Players:GetPlayers()) do
+		local Stats = Player:FindFirstChild("Stats")
+		local Value = Stats and Stats:FindFirstChild("KillerChance")
+
+		if Value and Value.Value > Highest then
+			Highest = Value.Value
+			Evilest = Player
+		end
+	end
+
+	return Evilest, Highest
+end
+
+function UtilityService.GetRichestPlayer()
+	local Richest = nil
+	local Highest = -math.huge
+
+	for i, Player in ipairs(Players:GetPlayers()) do
+		local Stats = Player:FindFirstChild("Stats")
+		local Value = Stats and Stats:FindFirstChild("Cash")
+
+		if Value and Value.Value > Highest then
+			Highest = Value.Value
+			Richest = Player
+		end
+	end
+
+	return Richest, Highest
+end
+
+function UtilityService.IsKiller(Input)
+	local Character = GetCharacter(Input)
+	if not Character then return false end
+
+	return Character.Parent == Killers
+end
+
+function UtilityService.IsSurvivor(Input)
+	local Character = GetCharacter(Input)
+	if not Character then return false end
+
+	return Character.Parent == Survivors
+end
+
+function UtilityService.IsGhost(Input)
+	local Character = GetCharacter(Input)
+	if not Character then return false end
+
+	return Ghosts and Character.Parent == Ghosts
+end
+
+function UtilityService.IsSpectator(Input)
+	local Character = GetCharacter(Input)
+	if not Character then return false end
+
+	return Character.Parent == Workspace
+end
+
+function UtilityService.GetRole(Input)
+	if not Input then return "Unknown" end
+
+	if UtilityService.IsKiller(Input) then
+		return "Killer"
+	elseif UtilityService.IsSurvivor(Input) then
+		return "Survivor"
+	elseif UtilityService.IsGhost(Input) then
+		return "Ghost"
+	elseif UtilityService.IsSpectator(Input) then
+		return "Spectator"
+	end
+
+	return "Unknown"
+end
+
+return UtilityService
