@@ -96,7 +96,6 @@ function ESPService:GetNameInfo(Ins)
         
     elseif Ins.Name == "MusicBox" then
         DisplayName = "Music Box"
-    end
     
     elseif Ins.Name == "EvilScary" then
         DisplayName = "Evil Scary"
