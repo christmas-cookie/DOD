@@ -126,11 +126,18 @@ function ESPService:GetNameInfo(Ins)
     end
 
     if Settings.ShowHealth then
+    if Ins.Name == "Computer" then
+        local Percent = Ins:FindFirstChild("Model"):FindFirstChild("Screen"):FindFirstChild("SurfaceGui"):FindFirstChild("Percent")
+        if Percent and Percent:IsA("TextLabel") then
+            table.insert(Tags, Percent.Text)
+        end
+    else
         local Humanoid = GetHumanoid(Ins)
         if Humanoid then
             table.insert(Tags, tostring(math.floor(Humanoid.Health)) .. "hp")
         end
     end
+end
 
     return table.concat(Tags, " | ")
 end
