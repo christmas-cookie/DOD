@@ -127,7 +127,7 @@ function ESPService:GetNameInfo(Ins)
 
     if Settings.ShowHealth then
     if Ins.Name == "Computer" then
-        local Percent = Ins:FindFirstChild("Model"):FindFirstChild("Screen"):FindFirstChild("SurfaceGui"):FindFirstChild("Percent")
+        local Percent = Ins:WaitForChild("Model"):WaitForChild("Screen"):WaitForChild("SurfaceGui"):WaitForChild("Percent")
         if Percent and Percent:IsA("TextLabel") then
             table.insert(Tags, Percent.Text)
         end
